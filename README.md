@@ -1,12 +1,11 @@
-# 🛡️ Network Security Project
+# Network Security Project
 
-This project implements a secure peer-to-peer messaging system over **WebSockets and TLS**, designed as a coursework demonstration of applied cryptography and secure transport protocols.
+This project implements a secure peer-to-peer messaging system over **WebSockets and TLS**.
 
 ---
 
-## 📡 Network Architecture
+## Network Architecture
 
-### 🧭 Architecture Overview
 +–––––+      WSS (TLS)      +–––––+      WSS (TLS)      +–––––+
 |  ClientA | <—————–> |  Server  | <—————–> |  ClientB |
 +–––––+                    +–––––+                    +–––––+
@@ -17,7 +16,7 @@ This project implements a secure peer-to-peer messaging system over **WebSockets
 
 ---
 
-## 🔐 Transport Security: TLS
+## Transport Security: TLS
 
 The project uses **TLS (Transport Layer Security)** to secure all WebSocket communication between clients and the server.
 
@@ -28,11 +27,11 @@ The project uses **TLS (Transport Layer Security)** to secure all WebSocket comm
   - **Authentication**: Prevents basic MITM attacks on transport.
 - **TLS is the first layer of defense**, protecting against passive eavesdropping and active network-level attacks.
 
-However, TLS alone is not sufficient—this project also implements **application-layer end-to-end encryption** for complete security.
+However, TLS alone is not sufficient, therefore this project also implements **application-layer end-to-end encryption** for complete security.
 
 ---
 
-## 🔁 Application-Layer Protocol
+## Application-Layer Protocol
 
 ### Message Types
 
@@ -53,7 +52,7 @@ All communication between clients and server is done using **JSON messages** ove
 
 ---
 
-## 🔑 End-to-End Encryption (E2EE)
+## End-to-End Encryption (E2EE)
 
 ### Cryptographic Protocol Summary
 
@@ -81,7 +80,7 @@ All communication between clients and server is done using **JSON messages** ove
 
 ---
 
-## 🔄 Message Delivery Flow
+## Message Delivery Flow
 
 ```text
 1. Client A connects to server via WSS and registers identity.
