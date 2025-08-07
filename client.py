@@ -1,4 +1,5 @@
-# client.py
+# Secure E2EE Chat Client
+
 import tkinter as tk
 from tkinter import simpledialog, messagebox, font
 from threading import Thread

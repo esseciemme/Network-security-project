@@ -1,4 +1,5 @@
-# server.py
+# WebSocket Relay Server
+
 import asyncio, json, ssl, pathlib, base64, os, datetime
 import websockets
 from websockets.legacy.server import WebSocketServerProtocol
