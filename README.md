@@ -55,7 +55,7 @@ All communication between clients and server is done using **JSON messages** ove
 ## End-to-End Encryption (E2EE)
 
 <p align="center">
-  <img src="images/network_handshake.png" alt="Handshake and Key Exchange" width="700">
+  <img src="images/network_handshake.png" alt="Handshake and Key Exchange" width="800">
 </p>
 
 ### Cryptographic Protocol Summary
@@ -76,7 +76,7 @@ All communication between clients and server is done using **JSON messages** ove
 ## Message Encryption
 
 <p align="center">
-  <img src="images/network_messages.png" alt="Encrypted Message Flow" width="700">
+  <img src="images/network_messages.png" alt="Encrypted Message Flow" width="800">
 </p>
 
 - **AES-256-GCM** provides:
