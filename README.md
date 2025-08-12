@@ -7,7 +7,7 @@ This project implements a **secure peer-to-peer messaging system** over **WebSoc
 ## Network Architecture
 
 <p align="center">
-  <img src="images/network_general_architecture.png" alt="General Architecture" width="600">
+  <img src="images/network_general_architecture.png" alt="General Architecture" width="800">
 </p>
 
 - **Transport**: Communication occurs over **WebSockets over TLS (`wss://`)**.
