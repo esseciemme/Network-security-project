@@ -8,6 +8,7 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
+# Directory to store identity keys
 KEY_DIR = os.path.expanduser("~/.minichat")
 
 def b64e(b: bytes) -> str:

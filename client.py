@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import simpledialog, messagebox, font
 from threading import Thread
-import asyncio, websockets, ssl, json, base64, queue, time
+import asyncio, websockets, ssl, json, queue
 from cryptography.hazmat.primitives.asymmetric import x25519
 from common.crypto_utils import (
     load_or_create_identity, fingerprint,

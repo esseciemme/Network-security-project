@@ -7,6 +7,7 @@ import datetime
 import websockets
 from websockets.legacy.server import WebSocketServerProtocol
 
+# WebSocket relay server with TLS and self-signed certificate for localhost
 HOST = "127.0.0.1"
 PORT = 8443
 CERT_DIR = pathlib.Path("certs")
