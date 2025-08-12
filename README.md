@@ -76,7 +76,7 @@ All communication between clients and server is done using **JSON messages** ove
 ## Message Encryption
 
 <p align="center">
-  <img src="images/network_messages.png" alt="Encrypted Message Flow" width="1000">
+  <img src="images/network_message.png" alt="Encrypted Message Flow" width="800">
 </p>
 
 - **AES-256-GCM** provides:
