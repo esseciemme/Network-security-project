@@ -130,5 +130,5 @@ The server must be running before any clients connect.
 5. Use the graphical interface to chat in a secure way with another client or with the broadcast chat.
 
 <p align="center">
-  <img src="images/chat_interface.png" alt="Chat interface" width="600">
+  <img src="images/Chat_interface.png" alt="Chat interface" width="600">
 </p>
