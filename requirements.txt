@@ -1,0 +1,4 @@
+asyncio
+websockets==10.4
+cryptography
+tk
