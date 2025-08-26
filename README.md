@@ -99,3 +99,36 @@ All communication between clients and server is done using **JSON messages** ove
 5. All chat messages are encrypted with AES-GCM and relayed.
 6. The server forwards encrypted payloads without accessing content.
 7. Session can be terminated by either client, discarding keys.
+```
+
+## Usage
+
+### Requirements
+1. Ensure you have Python 3.9+ installed.
+2. Install the required dependencies by running:
+   ```bash
+   pip install -r requirements.txt
+    ```
+
+### Running the server
+The server must be running before any clients connect.
+1. Open a terminal.
+2. Navigate to the project directory.
+2. Start the server by running:
+    ```bash
+    python server.py
+    ```
+
+### Running a client
+1. Open a new terminal window.
+2. Navigate to the project directory.
+3. Start a client by running:
+    ```bash
+    python client.py
+    ```
+4. Enter your username when prompted.
+5. Use the graphical interface to chat in a secure way with another client or with the broadcast chat.
+
+<p align="center">
+  <img src="images/chat_interface.png" alt="Encrypted Message Flow" width="600">
+</p>
