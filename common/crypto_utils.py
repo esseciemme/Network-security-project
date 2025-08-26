@@ -7,6 +7,11 @@ from cryptography.hazmat.primitives.asymmetric import ed25519, x25519
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.asymmetric import x25519
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives import hashes
+import os
+
 
 # Directory to store identity keys
 KEY_DIR = os.path.expanduser("~/.minichat")
@@ -100,3 +105,45 @@ def aesgcm_encrypt(key: bytes, counter: int, ad: bytes, plaintext: bytes) -> Tup
 def aesgcm_decrypt(key: bytes, nonce: bytes, ad: bytes, ciphertext: bytes) -> bytes:
     """Decrypt AES-GCM ciphertext."""
     return AESGCM(key).decrypt(nonce, ciphertext, ad)
+
+def hkdf_expand(key_material: bytes, info: bytes, length: int) -> bytes:
+    """HKDF-SHA256 expand (no salt, project-wide standard)."""
+    hkdf = HKDF(algorithm=hashes.SHA256(), length=length, salt=None, info=info)
+    return hkdf.derive(key_material)
+
+def wrap_secret_for_pub(secret: bytes, recipient_ecdh_pub_bytes: bytes) -> dict:
+    """
+    Asymmetrically wrap 'secret' for a recipient using ephemeral X25519 + HKDF + AES-GCM.
+    Returns a dict with ephemeral_pub, nonce, ciphertext (all base64 strings).
+    """
+    eph_priv = x25519.X25519PrivateKey.generate()
+    recipient_pub = x25519.X25519PublicKey.from_public_bytes(recipient_ecdh_pub_bytes)
+    shared = eph_priv.exchange(recipient_pub)  # 32 bytes
+    wrap_key = hkdf_expand(shared, info=b"group-epoch-wrap", length=32)
+    nonce = os.urandom(12)
+    ct = AESGCM(wrap_key).encrypt(nonce, secret, None)
+    return {
+        "ephemeral_pub": b64e(eph_priv.public_key().public_bytes_raw()),
+        "nonce": b64e(nonce),
+        "ciphertext": b64e(ct),
+    }
+
+def unwrap_secret_with_priv(blob: dict, my_ecdh_priv: x25519.X25519PrivateKey) -> bytes:
+    """
+    Unwrap a secret using our X25519 private key and the sender's ephemeral pubkey.
+    """
+    eph_pub = x25519.X25519PublicKey.from_public_bytes(b64d(blob["ephemeral_pub"]))
+    shared = my_ecdh_priv.exchange(eph_pub)
+    wrap_key = hkdf_expand(shared, info=b"group-epoch-wrap", length=32)
+    nonce = b64d(blob["nonce"])
+    ct = b64d(blob["ciphertext"])
+    return AESGCM(wrap_key).decrypt(nonce, ct, None)
+
+
+def derive_group_sender_key(epoch_secret: bytes, group_id: str, sender_id: str) -> bytes:
+    """
+    Derive a unique AES-GCM key for (group, sender) from the epoch_secret.
+    Using different keys per-sender avoids nonce reuse even if counters collide.
+    """
+    info = b"group-msg-key|" + group_id.encode() + b"|" + sender_id.encode()
+    return hkdf_expand(epoch_secret, info=info, length=32)

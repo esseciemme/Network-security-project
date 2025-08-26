@@ -13,6 +13,9 @@ PORT = 8443
 CERT_DIR = pathlib.Path("certs")
 CERT_FILE = CERT_DIR / "server.crt"
 KEY_FILE = CERT_DIR / "server.key"
+GROUP_ID = "broadcast"
+group_members: set[str] = set()
+x25519_pubkeys: dict[str, bytes] = {}
 
 def ensure_self_signed_cert():
     """
@@ -74,6 +77,10 @@ async def handler(ws: WebSocketServerProtocol):
       6) CHAT_REQUEST: chat request
       7) CHAT_RESPONSE: chat response
       8) END_CHAT / CHAT_TERMINATE: chat termination
+      9) GROUP_JOIN: user requests to join the broadcast group
+      10) GROUP_COMMIT: committer sends new epoch and membership (signed on client)
+      11) GROUP_MESSAGE: relay to all current members (except sender)
+      12) GROUP_LEAVE: user wants to leave; server replies with current members
     """
     username = None
     try:
@@ -93,13 +100,19 @@ async def handler(ws: WebSocketServerProtocol):
                 clients.setdefault(username, []).append(ws)
                 await ws.send(json.dumps({"type": "hello_ack"}))
 
-            # 2) REGISTER: register Ed25519 identity pubkey
+            # 2) REGISTER: register Ed25519 identity pubkey and optional X25519 directory pubkey
             elif mtype == "register":
                 user = msg.get("user")
                 pub_b64 = msg.get("identity_pubkey")
+                xpub_b64 = msg.get("x25519_pubkey")
                 if user and pub_b64:
                     try:
                         identity_pubkeys[user] = base64.b64decode(pub_b64)
+                    except Exception:
+                        pass
+                if user and xpub_b64:
+                    try:
+                        x25519_pubkeys[user] = base64.b64decode(xpub_b64)
                     except Exception:
                         pass
                 await ws.send(json.dumps({"type": "register_ack"}))
@@ -108,10 +121,12 @@ async def handler(ws: WebSocketServerProtocol):
             elif mtype == "get_pubkey":
                 target = msg.get("user")
                 pub = identity_pubkeys.get(target)
+                xpub = x25519_pubkeys.get(target)
                 resp = {
                     "type": "pubkey",
                     "user": target,
                     "identity_pubkey": base64.b64encode(pub).decode() if pub else None,
+                    "x25519_pubkey": base64.b64encode(xpub).decode() if xpub else None,
                 }
                 await ws.send(json.dumps(resp))
 
@@ -166,6 +181,51 @@ async def handler(ws: WebSocketServerProtocol):
                     for target_ws in clients.get(user, []):
                         if target_ws and not target_ws.closed:
                             await target_ws.send(json.dumps(response))
+
+            # 9) GROUP_JOIN: user requests to join the broadcast group
+            elif mtype == "group_join":
+                resp = {
+                    "type": "group_members",
+                    "group": GROUP_ID,
+                    "members": sorted(list(group_members)),
+                }
+                await ws.send(json.dumps(resp))
+
+            # 10) GROUP_COMMIT: committer sends new epoch and membership (signed on client)
+            elif mtype == "group_commit":
+                if msg.get("group") != GROUP_ID:
+                    continue
+                new_members = msg.get("members") or []
+                group_members.clear()
+                for u in new_members:
+                    group_members.add(u)
+                msg["ts"] = int(datetime.datetime.utcnow().timestamp())
+                for u in new_members:
+                    for target_ws in clients.get(u, []):
+                        if target_ws and not target_ws.closed:
+                            await target_ws.send(json.dumps(msg))
+
+            # 11) GROUP_MESSAGE: relay to all current members (except sender)
+            elif mtype == "group_message":
+                if msg.get("group") != GROUP_ID:
+                    continue
+                sender = msg.get("from")
+                msg["ts"] = int(datetime.datetime.utcnow().timestamp())
+                for u in list(group_members):
+                    if u == sender:
+                        continue
+                    for target_ws in clients.get(u, []):
+                        if target_ws and not target_ws.closed:
+                            await target_ws.send(json.dumps(msg))
+
+            # 12) GROUP_LEAVE: user wants to leave; server replies with current members
+            elif mtype == "group_leave":
+                resp = {
+                    "type": "group_members",
+                    "group": GROUP_ID,
+                    "members": sorted(list(group_members)),
+                }
+                await ws.send(json.dumps(resp))
 
     except websockets.ConnectionClosed:
         pass
