@@ -7,7 +7,7 @@ This project implements a **secure peer-to-peer messaging system** over **WebSoc
 ## Network Architecture
 
 <p align="center">
-  <img src="images/network_general_architecture.png" alt="General Architecture" width="800">
+  <img src="images/network_general_architecture.png" alt="General Architecture" width="600">
 </p>
 
 - **Transport**: Communication occurs over **WebSockets over TLS (`wss://`)**.
@@ -55,7 +55,7 @@ All communication between clients and server is done using **JSON messages** ove
 ## End-to-End Encryption (E2EE)
 
 <p align="center">
-  <img src="images/network_handshake.png" alt="Handshake and Key Exchange" width="800">
+  <img src="images/network_handshake.png" alt="Handshake and Key Exchange" width="600">
 </p>
 
 ### Cryptographic Protocol Summary
@@ -76,7 +76,7 @@ All communication between clients and server is done using **JSON messages** ove
 ## Message Encryption
 
 <p align="center">
-  <img src="images/network_message.png" alt="Encrypted Message Flow" width="800">
+  <img src="images/network_message.png" alt="Encrypted Message Flow" width="600">
 </p>
 
 - **AES-256-GCM** provides:
@@ -99,7 +99,40 @@ All communication between clients and server is done using **JSON messages** ove
 5. All chat messages are encrypted with AES-GCM and relayed.
 6. The server forwards encrypted payloads without accessing content.
 7. Session can be terminated by either client, discarding keys.
-```
+   ```
+
+## Broadcast Chat
+
+The broadcast chat feature allows all connected clients to communicate in a shared group. It is implemented using a group-based encryption protocol to ensure secure communication.
+
+### Joining the Broadcast Chat
+1. When a client joins the broadcast chat, it sends a `group_join` request to the server.
+2. The client acts as the committer, generating a new **epoch secret** and including itself in the group.
+3. The **epoch secret** is encrypted for each group member using their X25519 public keys and sent as part of a `GROUP_COMMIT` message.
+4. The group state is updated locally, and the client can immediately start sending and receiving messages.
+
+### Sending Messages
+1. Each message is encrypted using **AES-256-GCM** with a key derived from the current **epoch secret**.
+2. The encryption process includes:
+   - A unique counter for each message to ensure nonce uniqueness.
+   - Associated data (e.g., group ID, sender, and counter) to bind the encryption context.
+3. The encrypted message is sent to the server as a `group_message` payload.
+4. The server relays the encrypted message to all group members without inspecting its content.
+
+### Receiving Messages
+1. When a client receives a `group_message`, it decrypts the message using the current **epoch secret**.
+2. The associated data and authentication tag are verified to ensure the message's integrity and authenticity.
+3. The decrypted message is displayed in the chat interface.
+
+### Leaving the Broadcast Chat
+1. When a client leaves the broadcast chat, it sends a `group_leave` request to the server.
+2. The client acts as the committer, generating a new **epoch secret** that excludes itself from the group.
+3. The remaining members receive the updated group state and can continue communicating securely.
+
+<p align="center">
+  <img src="images/Broadcast_diagram.png" alt="Broadcast work flow" width="600">
+</p>
+
 
 ## Usage
 
