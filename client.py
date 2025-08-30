@@ -43,10 +43,10 @@ class ChatClient:
         self.group = {
             "joined": False,
             "epoch": 0,
-            "epoch_secret": None,             # bytes
-            "members": [],                    # list[str]
+            "epoch_secret": None,  # bytes
+            "members": [],  # list[str]
             "my_ecdh": generate_ephemeral(),  # long-lived per-install is fine too
-            "send_counter": 0,                # my group message counter
+            "send_counter": 0,  # my group message counter
         }
 
         self.dir_x25519 = {}
@@ -54,12 +54,169 @@ class ChatClient:
         self.dir_ecdh_pub = self.dir_ecdh_priv.public_key().public_bytes_raw()
         self.dir_x25519[self.username] = self.dir_ecdh_pub
 
+        # Show tutorial before setting up the main UI
+        self._show_tutorial()
+
         self._setup_ui()
         self.ws = None
-        self.outq = queue.Queue() # Queue for outgoing messages
+        self.outq = queue.Queue()  # Queue for outgoing messages
         self.loop = asyncio.new_event_loop()
         Thread(target=lambda: self.loop.run_until_complete(self._main_async()), daemon=True).start()
         self.msg_entry.focus()
+
+    def _show_tutorial(self):
+        """Display a beautiful tutorial dialog explaining how to use the application."""
+        # Create a custom tutorial dialog
+        tutorial_window = tk.Toplevel(self.root)
+        tutorial_window.title("📚 Welcome to Secure Chat")
+        tutorial_window.geometry("650x550")
+        tutorial_window.configure(bg="#2C2F33")
+        tutorial_window.resizable(False, False)
+        tutorial_window.transient(self.root)
+        tutorial_window.grab_set()
+
+        # Center the tutorial window on screen
+        tutorial_window.geometry("650x550")
+        tutorial_window.update_idletasks()
+        width = tutorial_window.winfo_width()
+        height = tutorial_window.winfo_height()
+        x = (tutorial_window.winfo_screenwidth() // 2) - (width // 2)
+        y = (tutorial_window.winfo_screenheight() // 2) - (height // 2)
+        tutorial_window.geometry(f'{width}x{height}+{x}+{y}')
+
+        # Main container with padding
+        main_container = tk.Frame(tutorial_window, bg="#2C2F33", padx=25, pady=25)
+        main_container.pack(fill=tk.BOTH, expand=True)
+
+        # Header section with icon and title
+        header_frame = tk.Frame(main_container, bg="#2C2F33")
+        header_frame.pack(fill=tk.X, pady=(0, 20))
+
+        # Welcome icon
+        icon_label = tk.Label(header_frame,
+                              text="🔐",
+                              font=("Arial", 48),
+                              bg="#2C2F33")
+        icon_label.pack(side=tk.LEFT, padx=(0, 15))
+
+        # Title and subtitle
+        title_frame = tk.Frame(header_frame, bg="#2C2F33")
+        title_frame.pack(side=tk.LEFT, fill=tk.Y)
+
+        main_title = tk.Label(title_frame,
+                              text="Secure E2EE Chat",
+                              font=("Arial", 20, "bold"),
+                              fg="white",
+                              bg="#2C2F33")
+        main_title.pack(anchor="w")
+
+        subtitle = tk.Label(title_frame,
+                            text="End-to-End Encrypted Messaging",
+                            font=("Arial", 11),
+                            fg="#7289DA",
+                            bg="#2C2F33")
+        subtitle.pack(anchor="w", pady=(2, 0))
+
+        # Content frame with sections
+        content_frame = tk.Frame(main_container, bg="#23272A", padx=20, pady=20)
+        content_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Create scrollable content
+        canvas = tk.Canvas(content_frame, bg="#23272A", highlightthickness=0)
+        scrollbar = tk.Scrollbar(content_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg="#23272A")
+
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Tutorial sections
+        sections = [
+            {
+                "title": "🔑 Getting Started",
+                "content": "Welcome to your secure messaging application! This guide will help you understand how to use all features."
+            },
+            {
+                "title": "👥 Individual Chats",
+                "content": "• Select any user from the 'Active Users' list\n• Click 'Start Chat' to initiate a conversation\n• Wait for your peer to accept the request\n• Exchange end-to-end encrypted messages securely\n• Click 'End Chat' to terminate the chat."
+            },
+            {
+                "title": "📢 Broadcast Chat",
+                "content": "• Select 'Broadcast' from the user list\n• Click 'Start Chat' to join the group\n• Send messages visible to all group members\n• Click 'End Chat' to leave the group."
+            },
+            {
+                "title": "🛡️ Security Features",
+                "content": "• End-to-end encryption protects all messages\n• Unique fingerprints verify user identities\n• X25519 key exchange prevents MITM attacks\n• TLS transport security for network protection"
+            }
+        ]
+
+        for section in sections:
+            # Section title
+            title_label = tk.Label(scrollable_frame,
+                                   text=section["title"],
+                                   font=("Arial", 13, "bold"),
+                                   fg="#7289DA",
+                                   bg="#23272A",
+                                   anchor="w")
+            title_label.pack(fill=tk.X, pady=(0, 8))
+
+            # Section content
+            content_label = tk.Label(scrollable_frame,
+                                     text=section["content"],
+                                     font=("Arial", 10),
+                                     fg="white",
+                                     bg="#23272A",
+                                     justify="left",
+                                     wraplength=500,
+                                     anchor="w")
+            content_label.pack(fill=tk.X, pady=(0, 20))
+
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # Enhanced OK button with hover effects
+        button_frame = tk.Frame(main_container, bg="#2C2F33")
+        button_frame.pack(fill=tk.X, pady=(20, 0))
+
+        def on_enter(e):
+            ok_button.config(bg="#5B6EAE", relief=tk.RAISED, bd=2)
+
+        def on_leave(e):
+            ok_button.config(bg="#7289DA", relief=tk.FLAT, bd=0)
+
+        ok_button = tk.Button(button_frame,
+                              text="🚀 Start Using the App",
+                              command=tutorial_window.destroy,
+                              bg="#7289DA",
+                              fg="white",
+                              activebackground="#5B6EAE",
+                              activeforeground="white",
+                              font=("Arial", 12, "bold"),
+                              padx=30,
+                              pady=12,
+                              bd=0,
+                              relief=tk.FLAT,
+                              cursor="hand2")
+
+        ok_button.pack()
+        ok_button.bind("<Enter>", on_enter)
+        ok_button.bind("<Leave>", on_leave)
+
+        # Footer text
+        footer_label = tk.Label(main_container,
+                                text="Happy chatting! 🎉",
+                                font=("Arial", 9),
+                                fg="#99AAB5",
+                                bg="#2C2F33")
+        footer_label.pack(pady=(10, 0))
+
+        # Wait for the tutorial window to be closed
+        self.root.wait_window(tutorial_window)
 
     def _setup_ui(self):
         """Builds the main UI layout."""
