@@ -65,8 +65,8 @@ class ChatClient:
         self.msg_entry.focus()
 
     def _show_tutorial(self):
-        """Display a beautiful tutorial dialog explaining how to use the application."""
-        # Create a custom tutorial dialog
+        """Display a tutorial dialog explaining how to use the application."""
+
         tutorial_window = tk.Toplevel(self.root)
         tutorial_window.title("📚 Welcome to Secure Chat")
         tutorial_window.geometry("650x550")
@@ -74,9 +74,6 @@ class ChatClient:
         tutorial_window.resizable(False, False)
         tutorial_window.transient(self.root)
         tutorial_window.grab_set()
-
-        # Center the tutorial window on screen
-        tutorial_window.geometry("650x550")
         tutorial_window.update_idletasks()
         width = tutorial_window.winfo_width()
         height = tutorial_window.winfo_height()
@@ -88,44 +85,25 @@ class ChatClient:
         main_container = tk.Frame(tutorial_window, bg="#2C2F33", padx=25, pady=25)
         main_container.pack(fill=tk.BOTH, expand=True)
 
-        # Header section with icon and title
+        # Header
         header_frame = tk.Frame(main_container, bg="#2C2F33")
         header_frame.pack(fill=tk.X, pady=(0, 20))
-
-        # Welcome icon
-        icon_label = tk.Label(header_frame,
-                              text="🔐",
-                              font=("Arial", 48),
-                              bg="#2C2F33")
+        icon_label = tk.Label(header_frame, text="🔐", font=("Arial", 48), bg="#2C2F33")
         icon_label.pack(side=tk.LEFT, padx=(0, 15))
 
-        # Title and subtitle
         title_frame = tk.Frame(header_frame, bg="#2C2F33")
         title_frame.pack(side=tk.LEFT, fill=tk.Y)
-
-        main_title = tk.Label(title_frame,
-                              text="Secure E2EE Chat",
-                              font=("Arial", 20, "bold"),
-                              fg="white",
-                              bg="#2C2F33")
+        main_title = tk.Label(title_frame, text="Secure E2EE Chat", font=("Arial", 20, "bold"), fg="white", bg="#2C2F33")
         main_title.pack(anchor="w")
-
-        subtitle = tk.Label(title_frame,
-                            text="End-to-End Encrypted Messaging",
-                            font=("Arial", 11),
-                            fg="#7289DA",
-                            bg="#2C2F33")
+        subtitle = tk.Label(title_frame, text="End-to-End Encrypted Messaging", font=("Arial", 11), fg="#7289DA", bg="#2C2F33")
         subtitle.pack(anchor="w", pady=(2, 0))
 
         # Content frame with sections
         content_frame = tk.Frame(main_container, bg="#23272A", padx=20, pady=20)
         content_frame.pack(fill=tk.BOTH, expand=True)
-
-        # Create scrollable content
         canvas = tk.Canvas(content_frame, bg="#23272A", highlightthickness=0)
         scrollbar = tk.Scrollbar(content_frame, orient="vertical", command=canvas.yview)
         scrollable_frame = tk.Frame(canvas, bg="#23272A")
-
         scrollable_frame.bind(
             "<Configure>",
             lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
@@ -134,7 +112,6 @@ class ChatClient:
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
 
-        # Tutorial sections
         sections = [
             {
                 "title": "🔑 Getting Started",
@@ -155,31 +132,14 @@ class ChatClient:
         ]
 
         for section in sections:
-            # Section title
-            title_label = tk.Label(scrollable_frame,
-                                   text=section["title"],
-                                   font=("Arial", 13, "bold"),
-                                   fg="#7289DA",
-                                   bg="#23272A",
-                                   anchor="w")
-            title_label.pack(fill=tk.X, pady=(0, 8))
 
-            # Section content
-            content_label = tk.Label(scrollable_frame,
-                                     text=section["content"],
-                                     font=("Arial", 10),
-                                     fg="white",
-                                     bg="#23272A",
-                                     justify="left",
-                                     wraplength=500,
-                                     anchor="w")
+            title_label = tk.Label(scrollable_frame, text=section["title"], font=("Arial", 14, "bold"), fg="#7289DA", bg="#23272A", anchor="w")
+            title_label.pack(fill=tk.X, pady=(0, 8))
+            content_label = tk.Label(scrollable_frame, text=section["content"], font=("Arial", 10), fg="white", bg="#23272A", justify="left", wraplength=500, anchor="w")
             content_label.pack(fill=tk.X, pady=(0, 20))
 
-        # Pack canvas and scrollbar
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
-
-        # Enhanced OK button with hover effects
         button_frame = tk.Frame(main_container, bg="#2C2F33")
         button_frame.pack(fill=tk.X, pady=(20, 0))
 
@@ -189,33 +149,15 @@ class ChatClient:
         def on_leave(e):
             ok_button.config(bg="#7289DA", relief=tk.FLAT, bd=0)
 
-        ok_button = tk.Button(button_frame,
-                              text="🚀 Start Using the App",
-                              command=tutorial_window.destroy,
-                              bg="#7289DA",
-                              fg="white",
-                              activebackground="#5B6EAE",
-                              activeforeground="white",
-                              font=("Arial", 12, "bold"),
-                              padx=30,
-                              pady=12,
-                              bd=0,
-                              relief=tk.FLAT,
-                              cursor="hand2")
-
+        ok_button = tk.Button(button_frame, text="🚀 Start Using the App", command=tutorial_window.destroy, bg="#7289DA", fg="white", activebackground="#5B6EAE", activeforeground="white", font=("Arial", 12, "bold"), padx=30, pady=12, bd=0, relief=tk.FLAT, cursor="hand2")
         ok_button.pack()
         ok_button.bind("<Enter>", on_enter)
         ok_button.bind("<Leave>", on_leave)
 
-        # Footer text
-        footer_label = tk.Label(main_container,
-                                text="Happy chatting! 🎉",
-                                font=("Arial", 9),
-                                fg="#99AAB5",
-                                bg="#2C2F33")
+        # Footer
+        footer_label = tk.Label(main_container, text="Happy chatting! 🎉", font=("Arial", 9), fg="#99AAB5", bg="#2C2F33")
         footer_label.pack(pady=(10, 0))
 
-        # Wait for the tutorial window to be closed
         self.root.wait_window(tutorial_window)
 
     def _setup_ui(self):
@@ -244,9 +186,9 @@ class ChatClient:
         self.user_listbox = tk.Listbox(users_frame, height=15, width=20, font=("Arial", 12), bg="#23272A", fg="white",selectbackground="#7289DA", selectforeground="white")
         self.user_listbox.pack(fill=tk.BOTH, expand=True)
         self.user_listbox.bind("<<ListboxSelect>>", self.on_user_selected)
-        self.start_chat_btn = tk.Button(users_frame, text="Start Chat", command=self.start_chat, bg="#7289DA", fg="white", activebackground="#5B6EAE", activeforeground="white", bd=0)
+        self.start_chat_btn = tk.Button(users_frame, text="Start Chat", command=self.start_chat, bg="#7289DA", fg="black", activebackground="#5B6EAE", activeforeground="white", bd=0)
         self.start_chat_btn.pack(fill=tk.X, pady=5)
-        self.terminate_chat_btn = tk.Button(users_frame, text="End Chat", command=self.terminate_chat, bg="#F04747", fg="white", activebackground="#C03A3A", activeforeground="white", bd=0)
+        self.terminate_chat_btn = tk.Button(users_frame, text="End Chat", command=self.terminate_chat, bg="#F04747", fg="black", activebackground="#C03A3A", activeforeground="white", bd=0)
         self.terminate_chat_btn.pack(fill=tk.X)
 
         # Chat area
@@ -266,7 +208,7 @@ class ChatClient:
         input_frame.pack(fill=tk.X, pady=5)
         self.msg_entry = tk.Entry(input_frame, bg="#23272A", fg="white", insertbackground="white")
         self.msg_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        self.send_button = tk.Button(input_frame, text="Send", command=self.send_message, bg="#7289DA", fg="white", activebackground="#99AAB5", activeforeground="black", bd=0, font=("Segoe UI", 10, "bold"), padx=10, pady=5)
+        self.send_button = tk.Button(input_frame, text="Send", command=self.send_message, bg="#7289DA", fg="black", activebackground="#99AAB5", activeforeground="white", bd=0, font=("Segoe UI", 10, "bold"), padx=10, pady=5)
         self.send_button.pack(side=tk.LEFT, padx=5)
         self.set_chat_controls_enabled(False)
 
