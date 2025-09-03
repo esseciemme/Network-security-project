@@ -756,10 +756,6 @@ class ChatClient:
         self.set_chat_controls_enabled(bool(attivi))
         self.update_session_status()
 
-    async def _ensure_x25519_directory_published(self):
-        # Already published at login; nothing to do here, kept for symmetry
-        return
-
     async def _send_termination_notice(self, peer):
         """Notify a peer that the chat is terminated."""
         await self.ws.send(json.dumps({
@@ -771,8 +767,7 @@ class ChatClient:
         Build and send a group_commit while allowing the recv loop to process
         pubkey responses in parallel. Updates local state optimistically.
         """
-        await self._ensure_x25519_directory_published()
-
+        
         # Require directory keys for all existing members so everyone can decrypt immediately
         if joining:
             required = [u for u in new_members if u != self.username]
