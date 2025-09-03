@@ -137,7 +137,7 @@ The broadcast chat feature allows all connected clients to communicate in a shar
 ## Usage
 
 ### Requirements
-1. Ensure you have Python 3.9+ installed.
+1. Ensure you have Python 3.10+ installed.
 2. Install the required dependencies by running:
    ```bash
    pip install -r requirements.txt
